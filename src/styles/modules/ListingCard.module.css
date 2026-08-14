@@ -1,0 +1,152 @@
+/* =============================================
+   LISTING CARD
+   ============================================= */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-3px);
+}
+
+/* ─── Imagen ─── */
+.card__image {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: var(--color-surface-hover);
+}
+
+.card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.card:hover .card__image img {
+  transform: scale(1.04);
+}
+
+.card__image_placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  background: linear-gradient(135deg, var(--color-primary-50), var(--color-surface-hover));
+}
+
+/* Badge tipo de propiedad */
+.card__type_badge {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  backdrop-filter: blur(4px);
+  background-color: rgba(240, 253, 244, 0.92) !important;
+}
+
+/* Botón favorito */
+.card__fav_btn {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.card__fav_btn:hover {
+  background-color: var(--color-surface);
+  color: var(--color-danger);
+  transform: scale(1.1);
+}
+
+.card__fav_btn.active {
+  color: var(--color-danger);
+  background-color: var(--color-danger-bg);
+}
+
+/* ─── Body ─── */
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+/* Precio */
+.card__price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+/* Título */
+.card__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+  margin: 0;
+}
+
+/* Ubicación */
+.card__location {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card__location svg {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+/* Specs */
+.card__specs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-light);
+  margin-top: auto;
+}
+
+.card__specs span {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.card__specs svg {
+  color: var(--color-primary);
+}
