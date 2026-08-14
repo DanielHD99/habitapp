@@ -58,13 +58,7 @@ export const PROPERTY_TYPE_LABELS = {
   habitacion:  'Habitación',
 }
 
-export const REPORT_REASONS = [
-  { value: 'fraud', label: 'Fraude o estafa' },
-  { value: 'rented', label: 'Ya está arrendado' },
-  { value: 'fake_info', label: 'Información falsa' },
-  { value: 'spam', label: 'Spam o duplicado' },
-  { value: 'other', label: 'Otro motivo' }
-]
+
 
 /**
  * Etiqueta legible del estado
