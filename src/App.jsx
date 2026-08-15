@@ -14,6 +14,7 @@ import Login          from './pages/Login'
 import Register       from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import AuthCallback   from './pages/AuthCallback'
+import SecurityGuide  from './pages/SecurityGuide'
 
 /* ─── Páginas privadas ─── */
 import Publish        from './pages/Publish'
@@ -58,6 +59,7 @@ export default function App() {
               <Route path="/vivienda/:id" element={<ListingDetail />} />
               <Route path="/login"  element={<Login />} />
               <Route path="/registro" element={<Register />} />
+              <Route path="/seguridad" element={<SecurityGuide />} />
               <Route path="/recuperar-contrasena" element={<ForgotPassword />} />
 
               {/* ─── Publicar vivienda (Acceso abierto a usuarios registrados y anónimos) ─── */}

@@ -124,4 +124,51 @@ export function normalizeAddress(address) {
     .trim()
 }
 
+/**
+ * Comprime automáticamente una imagen grande antes de subirla
+ * (Reduce dimensiones a máximo 1920px y calidad JPEG 82%)
+ */
+export async function compressImage(file, maxWidth = 1920, quality = 0.82) {
+  if (!file || !file.type.startsWith('image/')) return file
+  if (file.size <= 1.5 * 1024 * 1024) return file // Si es menor a 1.5MB no necesita compresión
+
+  return new Promise((resolve) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.src = url
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      let { width, height } = img
+
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width)
+        width = maxWidth
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, width, height)
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return resolve(file)
+          const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          })
+          resolve(compressedFile)
+        },
+        'image/jpeg',
+        quality
+      )
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      resolve(file)
+    }
+  })
+}
+
 

@@ -67,13 +67,15 @@ export default function EditListing() {
 
   const totalImages = existingImages.length + newImages.length
 
-  function handleNewImages(files) {
+  async function handleNewImages(files) {
     const slots = MAX_IMAGES - totalImages
     if (slots <= 0) { setError(`Máximo ${MAX_IMAGES} fotografías en total.`); return }
-    Array.from(files).slice(0, slots).forEach(file => {
-      if (file.size > 5 * 1024 * 1024) { setError(`"${file.name}" supera el límite de 5MB.`); return }
-      setNewImages(prev => [...prev, { file, preview: URL.createObjectURL(file) }])
-    })
+    const selected = Array.from(files).slice(0, slots)
+    for (const file of selected) {
+      if (file.size > 25 * 1024 * 1024) { setError(`"${file.name}" supera el límite de 25MB.`); continue }
+      const processedFile = await compressImage(file)
+      setNewImages(prev => [...prev, { file: processedFile, preview: URL.createObjectURL(processedFile) }])
+    }
   }
 
   async function removeExistingImage(imgId) {
@@ -116,14 +118,18 @@ export default function EditListing() {
         const { file } = newImages[i]
         const ext  = file.name.split('.').pop()
         const path = `${user.id}/${id}/${Date.now()}_${i}.${ext}`
-        await supabase.storage.from('listing-images').upload(path, file, { contentType: file.type })
+        const { error: uploadErr } = await supabase.storage.from('listing-images').upload(path, file, { cacheControl: '3600', upsert: true })
+        if (uploadErr) {
+          throw new Error(`Error al subir "${file.name}": ${uploadErr.message}`)
+        }
         const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(path)
         await supabase.from('listing_images').insert({ listing_id: id, url: publicUrl, position: existingImages.length + i + 1 })
       }
 
       navigate('/mis-publicaciones')
     } catch (err) {
-      setError('Error al guardar. Intenta de nuevo.')
+      console.error('Error editando vivienda:', err)
+      setError(err.message || 'Error al guardar. Intenta de nuevo.')
     } finally {
       setSaving(false)
     }

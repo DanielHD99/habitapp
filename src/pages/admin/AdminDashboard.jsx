@@ -7,12 +7,12 @@ import { useAuth } from '../../context/AuthContext'
 
 export default function AdminDashboard() {
   const { isCityAdmin, assignedCities, isSuperAdmin } = useAuth()
-  const [stats, setStats] = useState({ users: 0, listings: 0, reports: 0, hidden: 0 })
+  const [stats, setStats] = useState({ users: 0, listings: 0, reports: 0, hidden: 0, sources: {}, neighborhoods: [] })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchStats() {
-      let listingsQuery = supabase.from('listings').select('id', { count: 'exact', head: true }).neq('status', 'deleted')
+      let listingsQuery = supabase.from('listings').select('id, source_platform, neighborhood', { count: 'exact' }).neq('status', 'deleted')
       let hiddenQuery   = supabase.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'hidden')
 
       if (isCityAdmin && assignedCities.length > 0) {
@@ -26,11 +26,31 @@ export default function AdminDashboard() {
         supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         hiddenQuery,
       ])
+
+      const sourceCounts = {}
+      const neighborhoodCounts = {}
+
+      if (listingsRes.data) {
+        listingsRes.data.forEach(l => {
+          const src = l.source_platform || 'direct'
+          sourceCounts[src] = (sourceCounts[src] || 0) + 1
+
+          const neigh = l.neighborhood || 'Sin barrio'
+          neighborhoodCounts[neigh] = (neighborhoodCounts[neigh] || 0) + 1
+        })
+      }
+
+      const topNeighborhoods = Object.entries(neighborhoodCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+
       setStats({
         users:    usersRes.count || 0,
         listings: listingsRes.count || 0,
         reports:  reportsRes.count || 0,
         hidden:   hiddenRes.count || 0,
+        sources:  sourceCounts,
+        neighborhoods: topNeighborhoods
       })
       setLoading(false)
     }
@@ -105,6 +125,59 @@ export default function AdminDashboard() {
               <Link to="/admin/reportes" className="btn btn-sm" style={{ backgroundColor: 'var(--color-danger)', color: 'white', borderRadius: 'var(--radius-md)' }}>
                 Revisar reportes
               </Link>
+            </div>
+          )}
+
+          {/* ─── Métricas de Ingesta y Fuentes ─── */}
+          {!loading && (
+            <div style={{ marginTop: 'var(--space-8)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
+              {/* Desglose por Fuente */}
+              <div style={{ backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-6)', border: '1px solid var(--color-border)' }}>
+                <h3 style={{ fontSize: 'var(--font-size-md)', fontWeight: 600, marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  📊 Origen de Inmuebles Activos
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                  {[
+                    { key: 'facebook', label: 'Facebook Marketplace', color: '#1877F2', icon: '🟦' },
+                    { key: 'instagram', label: 'Instagram', color: '#E4405F', icon: '🟪' },
+                    { key: 'web', label: 'Portales / Clasificados Web', color: '#0284C7', icon: '🌐' },
+                    { key: 'direct', label: 'Publicaciones Directas / Nativas', color: '#22C55E', icon: '🏠' }
+                  ].map(src => {
+                    const count = stats.sources[src.key] || 0
+                    const pct = stats.listings > 0 ? Math.round((count / stats.listings) * 100) : 0
+                    return (
+                      <div key={src.key}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-sm)', marginBottom: '4px' }}>
+                          <span>{src.icon} {src.label}</span>
+                          <strong style={{ color: src.color }}>{count} ({pct}%)</strong>
+                        </div>
+                        <div style={{ height: 6, backgroundColor: 'var(--color-surface-hover)', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ width: `${pct}%`, height: '100%', backgroundColor: src.color, transition: 'width 0.3s' }} />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Desglose por Barrio */}
+              <div style={{ backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-6)', border: '1px solid var(--color-border)' }}>
+                <h3 style={{ fontSize: 'var(--font-size-md)', fontWeight: 600, marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  📍 Top Barrios en Armenia
+                </h3>
+                {stats.neighborhoods.length === 0 ? (
+                  <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>No hay suficientes datos por barrio aún.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                    {stats.neighborhoods.map(([neigh, count], idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-bg)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)' }}>
+                        <span style={{ fontWeight: 500 }}>{idx + 1}. {neigh}</span>
+                        <span className="badge badge-success" style={{ fontSize: 11 }}>{count} vivienda{count !== 1 ? 's' : ''}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

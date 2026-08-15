@@ -4,11 +4,11 @@ import { Helmet } from 'react-helmet-async'
 import { Upload, X, Plus, ShieldAlert, CheckCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { DEFAULT_CITY, PROPERTY_TYPE_LABELS, normalizeAddress } from '../lib/utils'
+import { DEFAULT_CITY, PROPERTY_TYPE_LABELS, normalizeAddress, compressImage } from '../lib/utils'
 import { useCities } from '../hooks/useCities'
 
 const MAX_IMAGES = 5
-const MAX_IMAGE_SIZE_MB = 5
+const MAX_IMAGE_SIZE_MB = 25
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 const FEATURES_OPTIONS = [
@@ -80,25 +80,28 @@ export default function Publish() {
     }
   }
 
-  function handleImageFiles(files) {
+  async function handleImageFiles(files) {
     const remaining = MAX_IMAGES - images.length
     if (remaining <= 0) { setError(`Solo puedes agregar hasta ${MAX_IMAGES} fotografías.`); return }
 
     const toAdd = Array.from(files).slice(0, remaining)
     const errors = []
 
-    toAdd.forEach(file => {
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        errors.push(`"${file.name}" no es un formato válido (JPG, PNG, WEBP).`)
-        return
+    for (const file of toAdd) {
+      if (!ALLOWED_TYPES.includes(file.type) && !file.type.startsWith('image/')) {
+        errors.push(`"${file.name}" no es un formato de imagen válido (JPG, PNG, WEBP).`)
+        continue
       }
       if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
         errors.push(`"${file.name}" supera el límite de ${MAX_IMAGE_SIZE_MB}MB.`)
-        return
+        continue
       }
-      const preview = URL.createObjectURL(file)
-      setImages(prev => [...prev, { file, preview }])
-    })
+
+      // Comprimir automáticamente si la foto viene en alta resolución de cámara de celular
+      const processedFile = await compressImage(file)
+      const preview = URL.createObjectURL(processedFile)
+      setImages(prev => [...prev, { file: processedFile, preview }])
+    }
 
     if (errors.length) setError(errors.join(' '))
   }
@@ -174,15 +177,30 @@ export default function Publish() {
       if (listingErr) throw listingErr
 
       const folder = user ? user.id : `guest/${listing.id}`
+      let uploadedCount = 0
+      let lastUploadError = null
+
       for (let i = 0; i < images.length; i++) {
         const { file } = images[i]
         const ext = file.name.split('.').pop().toLowerCase()
         const path = `${folder}/${Date.now()}_${i}.${ext}`
-        const { error: uploadErr } = await supabase.storage.from('listing-images').upload(path, file)
+
+        const { error: uploadErr } = await supabase.storage
+          .from('listing-images')
+          .upload(path, file, { cacheControl: '3600', upsert: true })
+
         if (!uploadErr) {
           const { data: urlData } = supabase.storage.from('listing-images').getPublicUrl(path)
           await supabase.from('listing_images').insert({ listing_id: listing.id, url: urlData.publicUrl, position: i + 1 })
+          uploadedCount++
+        } else {
+          console.error(`Error subiendo foto ${file.name}:`, uploadErr.message)
+          lastUploadError = uploadErr.message
         }
+      }
+
+      if (uploadedCount === 0 && images.length > 0) {
+        throw new Error(lastUploadError ? `Error al subir imágenes (${lastUploadError}). Ejecuta el script de políticas de almacenamiento en Supabase.` : 'No se pudieron subir las imágenes.')
       }
 
       if (isAnon) {
@@ -191,7 +209,8 @@ export default function Publish() {
         navigate(`/vivienda/${listing.id}`)
       }
     } catch (err) {
-      setError('Ocurrió un error. Intenta de nuevo.')
+      console.error('Error publicando vivienda:', err)
+      setError(err.message || 'Ocurrió un error. Intenta de nuevo.')
     } finally {
       setLoading(false)
     }

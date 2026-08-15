@@ -21,17 +21,17 @@ export default function Search() {
   const { cities: COLOMBIAN_CITIES } = useCities()
   const [listings, setListings]   = useState([])
   const [loading, setLoading]     = useState(true)
-  const [total, setTotal]         = useState(0)
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState(true)
 
   const [filters, setFilters] = useState({
-    city:       searchParams.get('ciudad') || '',
+    city:         searchParams.get('ciudad') || '',
     neighborhood: searchParams.get('barrio') || '',
-    type:       searchParams.get('tipo') || '',
-    minPrice:   searchParams.get('precioMin') || '',
-    maxPrice:   searchParams.get('precioMax') || '',
-    bedrooms:   searchParams.get('habitaciones') || '',
-    bathrooms:  searchParams.get('banos') || '',
+    type:         searchParams.get('tipo') || '',
+    source:       searchParams.get('fuente') || '',
+    minPrice:     searchParams.get('precioMin') || '',
+    maxPrice:     searchParams.get('precioMax') || '',
+    bedrooms:     searchParams.get('habitaciones') || '',
+    bathrooms:    searchParams.get('banos') || '',
   })
 
   const fetchListings = useCallback(async () => {
@@ -42,13 +42,14 @@ export default function Search() {
       .eq('status', 'published')
       .order('created_at', { ascending: false })
 
-    if (filters.city)      query = query.eq('city', filters.city)
+    if (filters.city)         query = query.eq('city', filters.city)
     if (filters.neighborhood) query = query.ilike('neighborhood', `%${filters.neighborhood}%`)
-    if (filters.type)      query = query.eq('property_type', filters.type)
-    if (filters.minPrice)  query = query.gte('price', Number(filters.minPrice))
-    if (filters.maxPrice)  query = query.lte('price', Number(filters.maxPrice))
-    if (filters.bedrooms)  query = query.gte('bedrooms', Number(filters.bedrooms))
-    if (filters.bathrooms) query = query.gte('bathrooms', Number(filters.bathrooms))
+    if (filters.type)         query = query.eq('property_type', filters.type)
+    if (filters.source)       query = query.eq('source_platform', filters.source)
+    if (filters.minPrice)     query = query.gte('price', Number(filters.minPrice))
+    if (filters.maxPrice)     query = query.lte('price', Number(filters.maxPrice))
+    if (filters.bedrooms)     query = query.gte('bedrooms', Number(filters.bedrooms))
+    if (filters.bathrooms)    query = query.gte('bathrooms', Number(filters.bathrooms))
 
     const { data, count, error } = await query.limit(40)
     if (!error && data) {
@@ -66,18 +67,19 @@ export default function Search() {
   function applyFilters(newFilters) {
     setFilters(newFilters)
     const params = {}
-    if (newFilters.city)      params.ciudad = newFilters.city
+    if (newFilters.city)         params.ciudad = newFilters.city
     if (newFilters.neighborhood) params.barrio = newFilters.neighborhood
-    if (newFilters.type)      params.tipo = newFilters.type
-    if (newFilters.minPrice)  params.precioMin = newFilters.minPrice
-    if (newFilters.maxPrice)  params.precioMax = newFilters.maxPrice
-    if (newFilters.bedrooms)  params.habitaciones = newFilters.bedrooms
-    if (newFilters.bathrooms) params.banos = newFilters.bathrooms
+    if (newFilters.type)         params.tipo = newFilters.type
+    if (newFilters.source)       params.fuente = newFilters.source
+    if (newFilters.minPrice)     params.precioMin = newFilters.minPrice
+    if (newFilters.maxPrice)     params.precioMax = newFilters.maxPrice
+    if (newFilters.bedrooms)     params.habitaciones = newFilters.bedrooms
+    if (newFilters.bathrooms)    params.banos = newFilters.bathrooms
     setSearchParams(params)
   }
 
   function clearFilters() {
-    const empty = { city: '', neighborhood: '', type: '', minPrice: '', maxPrice: '', bedrooms: '', bathrooms: '' }
+    const empty = { city: '', neighborhood: '', type: '', source: '', minPrice: '', maxPrice: '', bedrooms: '', bathrooms: '' }
     setFilters(empty)
     setSearchParams({})
   }
@@ -96,7 +98,7 @@ export default function Search() {
         <div className="container">
 
           {/* ─── Encabezado ─── */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
             <div>
               <h1 style={{ fontSize: 'var(--font-size-2xl)' }}>Buscar viviendas en Armenia</h1>
               {!loading && (
@@ -111,13 +113,55 @@ export default function Search() {
               style={{ position: 'relative' }}
             >
               <SlidersHorizontal size={16} />
-              Filtros
+              {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
               {activeCount > 0 && (
                 <span style={{ position: 'absolute', top: -8, right: -8, width: 20, height: 20, borderRadius: '50%', backgroundColor: 'var(--color-primary)', color: 'white', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {activeCount}
                 </span>
               )}
             </button>
+          </div>
+
+          {/* ─── Pestañas de Acceso Rápido por Tipo y Fuente ─── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
+            {/* Pestañas Tipo */}
+            <div style={{ display: 'flex', gap: 'var(--space-2)', overflowX: 'auto', paddingBottom: '4px' }}>
+              {[
+                { label: 'Todos los tipos', value: '' },
+                { label: 'Apartamentos', value: 'apartamento' },
+                { label: 'Casas', value: 'casa' },
+                { label: 'Habitaciones', value: 'habitacion' },
+              ].map(t => (
+                <button
+                  key={t.value}
+                  onClick={() => applyFilters({ ...filters, type: t.value })}
+                  className={`btn btn-sm ${filters.type === t.value ? 'btn-primary' : 'btn-ghost'}`}
+                  style={{ borderRadius: 'var(--radius-full)', whiteSpace: 'nowrap' }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Pestañas Fuente */}
+            <div style={{ display: 'flex', gap: 'var(--space-2)', overflowX: 'auto', paddingBottom: '4px' }}>
+              {[
+                { label: 'Todas las fuentes', value: '' },
+                { label: '🏠 Directos / Verificados', value: 'direct' },
+                { label: '🟦 Facebook', value: 'facebook' },
+                { label: '🟪 Instagram', value: 'instagram' },
+                { label: '🌐 Web', value: 'web' },
+              ].map(s => (
+                <button
+                  key={s.value}
+                  onClick={() => applyFilters({ ...filters, source: s.value })}
+                  className={`btn btn-sm ${filters.source === s.value ? 'btn-secondary' : 'btn-outline'}`}
+                  style={{ borderRadius: 'var(--radius-full)', whiteSpace: 'nowrap', fontSize: '12px' }}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* ─── Panel de filtros ─── */}
@@ -146,6 +190,18 @@ export default function Search() {
                     onChange={e => applyFilters({ ...filters, type: e.target.value })}>
                     <option value="">Todos los tipos</option>
                     {Object.entries(PROPERTY_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Origen / Fuente</label>
+                  <select className="form-select" value={filters.source}
+                    onChange={e => applyFilters({ ...filters, source: e.target.value })}>
+                    <option value="">Todas las fuentes</option>
+                    <option value="direct">🏠 Publicaciones Directas / Verificados</option>
+                    <option value="facebook">🟦 Facebook Marketplace</option>
+                    <option value="instagram">🟪 Instagram</option>
+                    <option value="web">🌐 Portales / Clasificados Web</option>
                   </select>
                 </div>
 
@@ -190,6 +246,7 @@ export default function Search() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-5)' }}>
               {filters.city && <FilterChip label={`Ciudad: ${filters.city}`} onRemove={() => applyFilters({ ...filters, city: '' })} />}
               {filters.type && <FilterChip label={`Tipo: ${PROPERTY_TYPE_LABELS[filters.type]}`} onRemove={() => applyFilters({ ...filters, type: '' })} />}
+              {filters.source && <FilterChip label={`Fuente: ${filters.source === 'facebook' ? 'Facebook' : filters.source === 'instagram' ? 'Instagram' : filters.source === 'web' ? 'Web' : 'Directa'}`} onRemove={() => applyFilters({ ...filters, source: '' })} />}
               {filters.maxPrice && <FilterChip label={`Máx: $${Number(filters.maxPrice).toLocaleString('es-CO')}`} onRemove={() => applyFilters({ ...filters, maxPrice: '' })} />}
               {filters.bedrooms && <FilterChip label={`${filters.bedrooms}+ hab.`} onRemove={() => applyFilters({ ...filters, bedrooms: '' })} />}
               {filters.bathrooms && <FilterChip label={`${filters.bathrooms}+ baños`} onRemove={() => applyFilters({ ...filters, bathrooms: '' })} />}

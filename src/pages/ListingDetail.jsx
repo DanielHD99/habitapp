@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { MapPin, Bed, Bath, ChevronLeft, ChevronRight, Flag, Share2, X, ShieldAlert } from 'lucide-react'
+import { MapPin, Bed, Bath, ChevronLeft, ChevronRight, Flag, Share2, X, ShieldAlert, Globe } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { formatPrice, formatRelativeDate, PROPERTY_TYPE_LABELS, REPORT_REASONS } from '../lib/utils'
@@ -100,15 +100,39 @@ export default function ListingDetail() {
 
   const images    = listing.listing_images
   const typeLabel = PROPERTY_TYPE_LABELS[listing.property_type] || listing.property_type
-  const waUrl     = buildWhatsAppUrl(listing.whatsapp, listing.title)
+  
+  let sourceName = listing.source_name
+  if (!sourceName && listing.source_url) {
+    if (listing.source_url.includes('facebook.com')) sourceName = 'Facebook Marketplace'
+    else if (listing.source_url.includes('instagram.com')) sourceName = 'Instagram'
+    else sourceName = 'un portal web'
+  } else if (!sourceName && listing.source_platform) {
+    if (listing.source_platform === 'facebook') sourceName = 'Facebook Marketplace'
+    else if (listing.source_platform === 'instagram') sourceName = 'Instagram'
+    else if (listing.source_platform === 'web') sourceName = 'un portal web'
+  }
+
+  const waUrl     = buildWhatsAppUrl(listing.whatsapp, listing.title, sourceName)
   const features  = listing.features || []
+
+  const shareWhatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
+    `¡Mira esta vivienda en arriendo en Armenia que encontré en HabitApp! 🏠\n*${listing.title}*\n💰 Precio: ${formatPrice(listing.price)}/mes\n📍 Ubicación: ${listing.neighborhood ? listing.neighborhood + ', Armenia' : 'Armenia'}\n\nVer fotos y más detalles en HabitApp: ${window.location.href}`
+  )}`
 
   return (
     <>
       <Helmet>
-        <title>{listing.title} — HabitApp</title>
-        <meta name="description" content={`${typeLabel} en ${listing.city} por ${formatPrice(listing.price)}/mes. ${listing.description?.slice(0, 120)}`} />
+        <title>{listing.title} — Arriendo en {listing.neighborhood || listing.city} | HabitApp</title>
+        <meta name="description" content={`${typeLabel} en arriendo en ${listing.neighborhood ? listing.neighborhood + ', ' : ''}${listing.city} por ${formatPrice(listing.price)}/mes. ${listing.bedrooms} hab, ${listing.bathrooms} baño. Ver más fotos y contactar directo.`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={`${listing.title} - ${formatPrice(listing.price)}/mes`} />
+        <meta property="og:description" content={`${typeLabel} en ${listing.neighborhood || listing.city}. ${listing.bedrooms} hab, ${listing.bathrooms} baños. Contacta directo por WhatsApp.`} />
         {images[0] && <meta property="og:image" content={images[0].url} />}
+        <meta property="og:url" content={window.location.href} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${listing.title} - ${formatPrice(listing.price)}/mes`} />
+        <meta name="twitter:description" content={`${typeLabel} en ${listing.neighborhood || listing.city}. Contacto por WhatsApp.`} />
+        {images[0] && <meta name="twitter:image" content={images[0].url} />}
       </Helmet>
 
       <div style={{ backgroundColor: 'var(--color-bg)', paddingBottom: 'var(--space-16)' }}>
@@ -269,6 +293,31 @@ export default function ListingDetail() {
                   </svg>
                   Contactar por WhatsApp
                 </a>
+
+                <a 
+                  href={shareWhatsAppUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="btn btn-outline btn-full"
+                  style={{ marginTop: 'var(--space-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}
+                >
+                  <Share2 size={18} />
+                  Compartir por WhatsApp
+                </a>
+
+                {listing.source_url && (
+                  <a 
+                    href={listing.source_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="btn btn-secondary btn-full"
+                    style={{ marginTop: 'var(--space-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}
+                  >
+                    <Globe size={18} />
+                    Ver en {listing.source_name || (listing.source_platform === 'facebook' ? 'Facebook' : listing.source_platform === 'instagram' ? 'Instagram' : 'Fuente Original')}
+                  </a>
+                )}
+
                 <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: 'var(--space-3)' }}>
                   Te conectarás directamente con el anunciante
                 </p>
