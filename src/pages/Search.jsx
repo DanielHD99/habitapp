@@ -21,6 +21,7 @@ export default function Search() {
   const { cities: COLOMBIAN_CITIES } = useCities()
   const [listings, setListings]   = useState([])
   const [loading, setLoading]     = useState(true)
+  const [total, setTotal]         = useState(0)
   const [showFilters, setShowFilters] = useState(true)
 
   const [filters, setFilters] = useState({
@@ -36,30 +37,47 @@ export default function Search() {
 
   const fetchListings = useCallback(async () => {
     setLoading(true)
-    let query = supabase
-      .from('listings')
-      .select('*, listing_images(url, position)', { count: 'exact' })
-      .eq('status', 'published')
-      .order('created_at', { ascending: false })
+    try {
+      let query = supabase
+        .from('listings')
+        .select('*, listing_images(url, position)', { count: 'exact' })
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
 
-    if (filters.city)         query = query.eq('city', filters.city)
-    if (filters.neighborhood) query = query.ilike('neighborhood', `%${filters.neighborhood}%`)
-    if (filters.type)         query = query.eq('property_type', filters.type)
-    if (filters.source)       query = query.eq('source_platform', filters.source)
-    if (filters.minPrice)     query = query.gte('price', Number(filters.minPrice))
-    if (filters.maxPrice)     query = query.lte('price', Number(filters.maxPrice))
-    if (filters.bedrooms)     query = query.gte('bedrooms', Number(filters.bedrooms))
-    if (filters.bathrooms)    query = query.gte('bathrooms', Number(filters.bathrooms))
+      if (filters.city)         query = query.eq('city', filters.city)
+      if (filters.neighborhood) query = query.ilike('neighborhood', `%${filters.neighborhood}%`)
+      if (filters.type)         query = query.eq('property_type', filters.type)
+      
+      if (filters.source === 'direct') {
+        query = query.or('source_platform.eq.direct,source_platform.is.null')
+      } else if (filters.source) {
+        query = query.eq('source_platform', filters.source)
+      }
 
-    const { data, count, error } = await query.limit(40)
-    if (!error && data) {
-      setListings(data.map(l => ({
-        ...l,
-        listing_images: (l.listing_images || []).sort((a, b) => a.position - b.position)
-      })))
-      setTotal(count || 0)
+      if (filters.minPrice)     query = query.gte('price', Number(filters.minPrice))
+      if (filters.maxPrice)     query = query.lte('price', Number(filters.maxPrice))
+      if (filters.bedrooms)     query = query.gte('bedrooms', Number(filters.bedrooms))
+      if (filters.bathrooms)    query = query.gte('bathrooms', Number(filters.bathrooms))
+
+      const { data, count, error } = await query.limit(40)
+      if (!error && data) {
+        setListings(data.map(l => ({
+          ...l,
+          listing_images: (l.listing_images || []).sort((a, b) => a.position - b.position)
+        })))
+        setTotal(count || 0)
+      } else {
+        console.error('Error cargando listings:', error)
+        setListings([])
+        setTotal(0)
+      }
+    } catch (err) {
+      console.error('Exception en fetchListings:', err)
+      setListings([])
+      setTotal(0)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [filters])
 
   useEffect(() => { fetchListings() }, [fetchListings])
