@@ -28,40 +28,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* ─── Columna desarrollo ─── */}
-          <div>
-            <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', marginBottom: 'var(--space-4)', color: 'rgba(255,255,255,0.9)' }}>
-              Desarrollo & Tecnología
-            </h4>
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <p style={{ fontSize: 'var(--font-size-sm)', color: 'white', fontWeight: 600, margin: 0, marginBottom: 'var(--space-2)' }}>
-                🎬 Delta Audiovisual
-              </p>
-              <p style={{ fontSize: 'var(--font-size-xs)', color: 'rgba(255,255,255,0.7)', margin: 0, marginBottom: 'var(--space-3)' }}>
-                Desarrollo web y producción audiovisual profesional.
-              </p>
-              <a
-                href="https://wa.me/573155399883?text=Hola%20Delta%20Audiovisual,%20vengo%20desde%20HabitApp"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'white',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-md)',
-                  textDecoration: 'none'
-                }}
-              >
-                <Phone size={14} /> Contactar: 315 539 9883
-              </a>
-            </div>
-          </div>
-
           {/* ─── Columna navegación ─── */}
           <div>
             <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', marginBottom: 'var(--space-4)', color: 'rgba(255,255,255,0.9)' }}>
@@ -108,6 +74,40 @@ export default function Footer() {
                 Contacto directo por WhatsApp
               </li>
             </ul>
+          </div>
+
+          {/* ─── Columna desarrollo (Última) ─── */}
+          <div>
+            <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', marginBottom: 'var(--space-4)', color: 'rgba(255,255,255,0.9)' }}>
+              Desarrollo & Tecnología
+            </h4>
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <p style={{ fontSize: 'var(--font-size-sm)', color: 'white', fontWeight: 600, margin: 0, marginBottom: 'var(--space-2)' }}>
+                🎬 Delta Audiovisual
+              </p>
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'rgba(255,255,255,0.7)', margin: 0, marginBottom: 'var(--space-3)' }}>
+                Desarrollo web y producción audiovisual profesional.
+              </p>
+              <a
+                href="https://wa.me/573155399883?text=Hola%20Delta%20Audiovisual,%20vengo%20desde%20HabitApp"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'white',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  textDecoration: 'none'
+                }}
+              >
+                <Phone size={14} /> Contactar: 315 539 9883
+              </a>
+            </div>
           </div>
         </div>
 
