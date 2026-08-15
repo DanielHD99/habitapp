@@ -140,46 +140,23 @@ export default function Search() {
             </button>
           </div>
 
-          {/* ─── Pestañas de Acceso Rápido por Tipo y Fuente ─── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
-            {/* Pestañas Tipo */}
-            <div style={{ display: 'flex', gap: 'var(--space-2)', overflowX: 'auto', paddingBottom: '4px' }}>
-              {[
-                { label: 'Todos los tipos', value: '' },
-                { label: 'Apartamentos', value: 'apartamento' },
-                { label: 'Casas', value: 'casa' },
-                { label: 'Habitaciones', value: 'habitacion' },
-              ].map(t => (
-                <button
-                  key={t.value}
-                  onClick={() => applyFilters({ ...filters, type: t.value })}
-                  className={`btn btn-sm ${filters.type === t.value ? 'btn-primary' : 'btn-ghost'}`}
-                  style={{ borderRadius: 'var(--radius-full)', whiteSpace: 'nowrap' }}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Pestañas Fuente */}
-            <div style={{ display: 'flex', gap: 'var(--space-2)', overflowX: 'auto', paddingBottom: '4px' }}>
-              {[
-                { label: 'Todas las fuentes', value: '' },
-                { label: '🏠 Directos / Verificados', value: 'direct' },
-                { label: '🟦 Facebook', value: 'facebook' },
-                { label: '🟪 Instagram', value: 'instagram' },
-                { label: '🌐 Web', value: 'web' },
-              ].map(s => (
-                <button
-                  key={s.value}
-                  onClick={() => applyFilters({ ...filters, source: s.value })}
-                  className={`btn btn-sm ${filters.source === s.value ? 'btn-secondary' : 'btn-outline'}`}
-                  style={{ borderRadius: 'var(--radius-full)', whiteSpace: 'nowrap', fontSize: '12px' }}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+          {/* ─── Pestañas de Acceso Rápido por Tipo ─── */}
+          <div style={{ display: 'flex', gap: 'var(--space-2)', overflowX: 'auto', paddingBottom: '4px', marginBottom: 'var(--space-6)' }}>
+            {[
+              { label: 'Todos los tipos', value: '' },
+              { label: 'Apartamentos', value: 'apartamento' },
+              { label: 'Casas', value: 'casa' },
+              { label: 'Habitaciones', value: 'habitacion' },
+            ].map(t => (
+              <button
+                key={t.value}
+                onClick={() => applyFilters({ ...filters, type: t.value })}
+                className={`btn btn-sm ${filters.type === t.value ? 'btn-primary' : 'btn-ghost'}`}
+                style={{ borderRadius: 'var(--radius-full)', whiteSpace: 'nowrap' }}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
           {/* ─── Panel de filtros ─── */}
@@ -208,18 +185,6 @@ export default function Search() {
                     onChange={e => applyFilters({ ...filters, type: e.target.value })}>
                     <option value="">Todos los tipos</option>
                     {Object.entries(PROPERTY_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Origen / Fuente</label>
-                  <select className="form-select" value={filters.source}
-                    onChange={e => applyFilters({ ...filters, source: e.target.value })}>
-                    <option value="">Todas las fuentes</option>
-                    <option value="direct">🏠 Publicaciones Directas / Verificados</option>
-                    <option value="facebook">🟦 Facebook Marketplace</option>
-                    <option value="instagram">🟪 Instagram</option>
-                    <option value="web">🌐 Portales / Clasificados Web</option>
                   </select>
                 </div>
 
@@ -264,7 +229,6 @@ export default function Search() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-5)' }}>
               {filters.city && <FilterChip label={`Ciudad: ${filters.city}`} onRemove={() => applyFilters({ ...filters, city: '' })} />}
               {filters.type && <FilterChip label={`Tipo: ${PROPERTY_TYPE_LABELS[filters.type]}`} onRemove={() => applyFilters({ ...filters, type: '' })} />}
-              {filters.source && <FilterChip label={`Fuente: ${filters.source === 'facebook' ? 'Facebook' : filters.source === 'instagram' ? 'Instagram' : filters.source === 'web' ? 'Web' : 'Directa'}`} onRemove={() => applyFilters({ ...filters, source: '' })} />}
               {filters.maxPrice && <FilterChip label={`Máx: $${Number(filters.maxPrice).toLocaleString('es-CO')}`} onRemove={() => applyFilters({ ...filters, maxPrice: '' })} />}
               {filters.bedrooms && <FilterChip label={`${filters.bedrooms}+ hab.`} onRemove={() => applyFilters({ ...filters, bedrooms: '' })} />}
               {filters.bathrooms && <FilterChip label={`${filters.bathrooms}+ baños`} onRemove={() => applyFilters({ ...filters, bathrooms: '' })} />}
