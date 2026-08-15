@@ -78,9 +78,6 @@ export default function Footer() {
 
           {/* ─── Columna desarrollo (Última) ─── */}
           <div>
-            <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-semibold)', marginBottom: 'var(--space-4)', color: 'rgba(255,255,255,0.9)' }}>
-              Desarrollo & Tecnología
-            </h4>
             <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', border: '1px solid rgba(255,255,255,0.1)' }}>
               <p style={{ fontSize: 'var(--font-size-sm)', color: 'white', fontWeight: 600, margin: 0, marginBottom: 'var(--space-2)' }}>
                 🎬 Delta Audiovisual
