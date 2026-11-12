@@ -1,6 +1,6 @@
 # Guía de Configuración de Ingesta Automatizada Programada (Cron Job)
 
-HabitApp cuenta con una automatización mediante **GitHub Actions** que se ejecuta **2 veces al día (8:00 AM y 6:00 PM hora Colombia)** para rastrear nuevas publicaciones en Armenia de Facebook, Instagram y Web.
+HabitApp cuenta con una automatización mediante **GitHub Actions** que se ejecuta **1 vez al día (8:00 AM hora Colombia)** para rastrear nuevas publicaciones en Armenia de Facebook, Instagram y Web.
 
 ---
 
@@ -23,8 +23,7 @@ Para que la automatización en la nube tenga acceso a tus claves API:
 
 ## 2. Horario de Ejecución
 
-* **8:00 AM Colombia** (`13:00 UTC`): Captura los inmuebles publicados durante la noche y temprano en la mañana.
-* **6:00 PM Colombia** (`23:00 UTC`): Captura los inmuebles publicados durante la tarde.
+* **8:00 AM Colombia** (`13:00 UTC`): Captura los inmuebles publicados para mantener el catálogo al día una vez al día.
 
 ---
 
